@@ -45,3 +45,7 @@ export interface ProfileDetailResponse {
     user_profile: FullUserProfile;
   };
 }
+
+export interface ShortlistItem extends UserProfileSummary {
+  platform: Platform;
+}
