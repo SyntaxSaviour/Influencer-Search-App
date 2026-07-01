@@ -7,11 +7,25 @@ interface ProfileListProps {
 }
 
 export function ProfileList({ profiles, platform }: ProfileListProps) {
+  if (profiles.length === 0) {
+    return (
+      <div className="empty-state" role="status">
+        <span className="empty-state-code">404 / NO SIGNAL</span>
+        <h2>No creators found.</h2>
+        <p>Try a different name or switch channels to widen the search.</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-col items-center">
-      {profiles.length === 0 && <p>No profiles found</p>}
-      {profiles.map((profile) => (
-        <ProfileCard key={profile.user_id} profile={profile} platform={platform} />
+    <div className="profile-grid">
+      {profiles.map((profile, index) => (
+        <ProfileCard
+          key={profile.user_id}
+          profile={profile}
+          platform={platform}
+          rank={index + 1}
+        />
       ))}
     </div>
   );

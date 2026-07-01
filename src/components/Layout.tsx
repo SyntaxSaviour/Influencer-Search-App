@@ -1,21 +1,35 @@
 import type { ReactNode } from "react";
-import { Link } from "react-router-dom";
 
 interface LayoutProps {
   children: ReactNode;
   title?: string;
+  eyebrow?: string;
+  description?: string;
+  actions?: ReactNode;
 }
 
-export function Layout({ children, title }: LayoutProps) {
+export function Layout({
+  children,
+  title,
+  eyebrow,
+  description,
+  actions,
+}: LayoutProps) {
   return (
-    <div className="p-4 min-h-screen">
-      <header className="mb-6 border-b pb-4">
-        <Link to="/" className="text-xl font-semibold text-gray-900">
-          Influencer Search
-        </Link>
-        {title && <h1 className="text-2xl mt-2">{title}</h1>}
-      </header>
-      <main>{children}</main>
-    </div>
+    <main id="main-content" className="page-shell">
+      <div className="page-frame">
+        {title && (
+          <header className="page-heading">
+            <div>
+              {eyebrow && <p className="eyebrow">{eyebrow}</p>}
+              <h1>{title}</h1>
+              {description && <p className="page-description">{description}</p>}
+            </div>
+            {actions && <div className="page-heading-actions">{actions}</div>}
+          </header>
+        )}
+        {children}
+      </div>
+    </main>
   );
 }

@@ -6,24 +6,43 @@ import { VerifiedBadge } from "@/components/VerifiedBadge";
 import type { FullUserProfile, Platform, ProfileDetailResponse } from "@/types";
 import { loadProfileByUsername } from "@/utils/profileLoader";
 import { useShortlistStore } from "@/store/shortlistStore";
+import {
+  ArrowLeftIcon,
+  ArrowUpRightIcon,
+  BookmarkIcon,
+  CheckIcon,
+} from "@/components/Icons";
+import { getPlatformLabel, PLATFORMS } from "@/utils/dataHelpers";
 
 export function ProfileDetailPage() {
   const { username } = useParams<{ username: string }>();
   const [searchParams] = useSearchParams();
-  const platform = (searchParams.get("platform") || "unknown") as Platform;
+  const platformParam = searchParams.get("platform");
+  const platform: Platform = PLATFORMS.includes(platformParam as Platform)
+    ? (platformParam as Platform)
+    : "instagram";
   const [profileData, setProfileData] = useState<ProfileDetailResponse | null>(
     null
   );
-  const [loaded, setLoaded] = useState(false);
+  const [loadedUsername, setLoadedUsername] = useState<string | null>(null);
 
   useEffect(() => {
     if (!username) return;
-    setLoaded(false);
+    let cancelled = false;
+
     loadProfileByUsername(username).then((data) => {
-      setProfileData(data);
-      setLoaded(true);
+      if (!cancelled) {
+        setProfileData(data);
+        setLoadedUsername(username);
+      }
     });
+
+    return () => {
+      cancelled = true;
+    };
   }, [username]);
+
+  const loaded = loadedUsername === username;
 
   const addProfile = useShortlistStore((state) => state.addProfile);
   const removeProfile = useShortlistStore((state) => state.removeProfile);
@@ -33,29 +52,46 @@ export function ProfileDetailPage() {
 
   if (!username) {
     return (
-      <Layout>
-        <p>Invalid profile</p>
-        <Link to="/">Back</Link>
+      <Layout
+        eyebrow="Profile file / Error"
+        title="Invalid creator profile."
+        description="The requested profile address is incomplete."
+      >
+        <Link to="/" className="button button-primary">
+          <ArrowLeftIcon />
+          Back to discovery
+        </Link>
       </Layout>
     );
   }
 
   if (!loaded) {
     return (
-      <Layout title={`@${username}`}>
-        <p className="text-gray-400">Loading...</p>
+      <Layout>
+        <div className="profile-loading" role="status" aria-live="polite">
+          <div className="skeleton skeleton-avatar" />
+          <div className="loading-copy">
+            <span className="skeleton skeleton-kicker" />
+            <span className="skeleton skeleton-title" />
+            <span className="skeleton skeleton-line" />
+            <span className="skeleton skeleton-line short" />
+          </div>
+          <p>Loading @{username} creator file…</p>
+        </div>
       </Layout>
     );
   }
 
   if (!profileData) {
     return (
-      <Layout title={`@${username}`}>
-        <p className="text-red-600 mb-4">
-          Could not load profile details for {username}
-        </p>
-        <Link to="/" className="text-blue-600 underline">
-          Back to search
+      <Layout
+        eyebrow="Profile file / Missing"
+        title="Signal lost."
+        description={`We could not load the creator file for @${username}.`}
+      >
+        <Link to="/" className="button button-primary">
+          <ArrowLeftIcon />
+          Back to discovery
         </Link>
       </Layout>
     );
@@ -72,99 +108,125 @@ export function ProfileDetailPage() {
   };
 
   return (
-    <Layout title={user.fullname}>
-      <Link to="/" className="text-sm text-blue-600 mb-4 inline-block">
-        ← Back to search
+    <Layout>
+      <Link to="/" className="back-link">
+        <ArrowLeftIcon />
+        Back to discovery
       </Link>
 
-      <div className="flex gap-6 items-start text-left max-w-2xl mx-auto">
-        <img src={user.picture} alt={user.fullname} className="w-12 h-12 rounded-full" />
-        <div className="flex-1">
-          <h2 className="text-xl font-bold">
-            @{user.username}
-            <VerifiedBadge verified={user.is_verified} />
-          </h2>
-          <p className="text-gray-600">{user.fullname}</p>
-          <p className="text-xs text-gray-400 mt-1">Platform: {platform}</p>
-
-          {user.description && (
-            <p className="mt-3 text-sm text-gray-700">{user.description}</p>
-          )}
-
-          <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
-            <div className="border p-2 rounded">
-              <div className="text-gray-500">Followers</div>
-              <div className="font-semibold">
-                {formatFollowers(user.followers)}
-              </div>
-            </div>
-            <div className="border p-2 rounded">
-              <div className="text-gray-500">Engagement Rate</div>
-              <div className="font-semibold">
-                {formatEngagementRate(user.engagement_rate)}
-              </div>
-            </div>
-            {user.posts_count !== undefined && (
-              <div className="border p-2 rounded">
-                <div className="text-gray-500">Posts</div>
-                <div className="font-semibold">{user.posts_count}</div>
-              </div>
-            )}
-            {user.avg_likes !== undefined && (
-              <div className="border p-2 rounded">
-                <div className="text-gray-500">Avg Likes</div>
-                <div className="font-semibold">
-                  {formatFollowers(user.avg_likes)}
-                </div>
-              </div>
-            )}
-            {user.avg_comments !== undefined && (
-              <div className="border p-2 rounded">
-                <div className="text-gray-500">Avg Comments</div>
-                <div className="font-semibold">{user.avg_comments}</div>
-              </div>
-            )}
-            {user.avg_views !== undefined && user.avg_views > 0 && (
-              <div className="border p-2 rounded">
-                <div className="text-gray-500">Avg Views</div>
-                <div className="font-semibold">
-                  {formatFollowers(user.avg_views)}
-                </div>
-              </div>
-            )}
-            {user.engagements !== undefined && (
-              <div className="border p-2 rounded">
-                <div className="text-gray-500">Engagements</div>
-                <div className="font-semibold">
-                  {formatFollowers(user.engagements)}
-                </div>
-              </div>
-            )}
+      <section className={`profile-hero platform-${platform}`}>
+        <div className="profile-portrait-block">
+          <span className="profile-file-label">Creator file / Live</span>
+          <div className="profile-portrait">
+            <img
+              src={user.picture}
+              alt={`Portrait of ${user.fullname}`}
+              referrerPolicy="no-referrer"
+            />
           </div>
+          <span className="profile-id">ID / {user.user_id.slice(-8)}</span>
+        </div>
 
-          {user.url && (
+        <div className="profile-identity">
+          <div className="profile-platform-row">
+            <span className="platform-stamp">{getPlatformLabel(platform)}</span>
+            <span>{user.is_verified ? "Verified signal" : "Open signal"}</span>
+          </div>
+          <h1>
+            {user.fullname}
+            <VerifiedBadge verified={user.is_verified} />
+          </h1>
+          <p className="profile-handle">@{user.username}</p>
+          <p className="profile-description">
+            {user.description ||
+              `${user.fullname} is building an audience on ${getPlatformLabel(
+                platform
+              )}.`}
+          </p>
+
+          <div className="profile-actions">
+            <button
+              type="button"
+              onClick={handleToggleList}
+              aria-pressed={isSelected}
+              className={`button button-primary${
+                isSelected ? " is-selected" : ""
+              }`}
+            >
+              {isSelected ? <CheckIcon /> : <BookmarkIcon />}
+              {isSelected ? "Saved to shortlist" : "Add to shortlist"}
+            </button>
+            {user.url && (
             <a
               href={user.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-block mt-4 text-blue-600 text-sm"
+                className="button button-secondary"
             >
-              View on platform →
+                View on {getPlatformLabel(platform)}
+                <ArrowUpRightIcon />
             </a>
           )}
-
-          <button
-            onClick={handleToggleList}
-            className={`block mt-4 px-4 py-2 rounded text-sm ${
-              isSelected
-                ? "bg-red-100 text-red-700 hover:bg-red-200"
-                : "bg-blue-600 text-white hover:bg-blue-700"
-            }`}
-          >
-            {isSelected ? "Remove from List" : "Add to List"}
-          </button>
+          </div>
         </div>
-      </div>
+      </section>
+
+      <section className="metrics-section" aria-labelledby="metrics-title">
+        <div className="section-title-row">
+          <div>
+            <p className="eyebrow">Audience intelligence</p>
+            <h2 id="metrics-title">The numbers behind the signal.</h2>
+          </div>
+        </div>
+
+        <dl className="detail-metrics">
+          <div className="metric-primary">
+            <dt>Followers</dt>
+            <dd>{formatFollowers(user.followers)}</dd>
+            <span>Total audience</span>
+          </div>
+          <div>
+            <dt>Engagement rate</dt>
+            <dd>{formatEngagementRate(user.engagement_rate)}</dd>
+            <span>Audience response</span>
+          </div>
+          {user.posts_count !== undefined && (
+            <div>
+              <dt>Posts</dt>
+              <dd>{formatFollowers(user.posts_count)}</dd>
+              <span>Published content</span>
+            </div>
+          )}
+          {user.avg_likes !== undefined && (
+            <div>
+              <dt>Avg. likes</dt>
+              <dd>{formatFollowers(user.avg_likes)}</dd>
+              <span>Per post</span>
+            </div>
+          )}
+          {user.avg_comments !== undefined && (
+            <div>
+              <dt>Avg. comments</dt>
+              <dd>{formatFollowers(user.avg_comments)}</dd>
+              <span>Per post</span>
+            </div>
+          )}
+          {user.avg_views !== undefined && user.avg_views > 0 && (
+            <div>
+              <dt>Avg. views</dt>
+              <dd>{formatFollowers(user.avg_views)}</dd>
+              <span>Per video</span>
+            </div>
+          )}
+          {user.engagements !== undefined && (
+            <div>
+              <dt>Engagements</dt>
+              <dd>{formatFollowers(user.engagements)}</dd>
+              <span>Total actions</span>
+            </div>
+          )}
+        </dl>
+      </section>
     </Layout>
   );
 }
