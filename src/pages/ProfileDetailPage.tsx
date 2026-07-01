@@ -3,13 +3,14 @@ import { useEffect, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { Layout } from "@/components/Layout";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
-import type { FullUserProfile, ProfileDetailResponse } from "@/types";
+import type { FullUserProfile, Platform, ProfileDetailResponse } from "@/types";
 import { loadProfileByUsername } from "@/utils/profileLoader";
+import { useShortlistStore } from "@/store/shortlistStore";
 
 export function ProfileDetailPage() {
   const { username } = useParams<{ username: string }>();
   const [searchParams] = useSearchParams();
-  const platform = searchParams.get("platform") || "unknown";
+  const platform = (searchParams.get("platform") || "unknown") as Platform;
   const [profileData, setProfileData] = useState<ProfileDetailResponse | null>(
     null
   );
@@ -17,12 +18,18 @@ export function ProfileDetailPage() {
 
   useEffect(() => {
     if (!username) return;
-
+    setLoaded(false);
     loadProfileByUsername(username).then((data) => {
       setProfileData(data);
       setLoaded(true);
     });
   }, [username]);
+
+  const addProfile = useShortlistStore((state) => state.addProfile);
+  const removeProfile = useShortlistStore((state) => state.removeProfile);
+  const isSelected = useShortlistStore((state) =>
+    profileData ? state.isSelected(platform, profileData.data.user_profile.user_id) : false
+  );
 
   if (!username) {
     return (
@@ -55,6 +62,14 @@ export function ProfileDetailPage() {
   }
 
   const user: FullUserProfile = profileData.data.user_profile;
+
+  const handleToggleList = () => {
+    if (isSelected) {
+      removeProfile(platform, user.user_id);
+    } else {
+      addProfile({ ...user, platform });
+    }
+  };
 
   return (
     <Layout title={user.fullname}>
@@ -138,13 +153,15 @@ export function ProfileDetailPage() {
             </a>
           )}
 
-          {/* TODO: candidates must implement Add to List feature */}
-          {/* TODO: candidates must implement Add to List feature */}
           <button
-            disabled
-            className="block mt-4 px-4 py-2 bg-gray-300 text-gray-500 rounded cursor-not-allowed"
+            onClick={handleToggleList}
+            className={`block mt-4 px-4 py-2 rounded text-sm ${
+              isSelected
+                ? "bg-red-100 text-red-700 hover:bg-red-200"
+                : "bg-blue-600 text-white hover:bg-blue-700"
+            }`}
           >
-            Add to List
+            {isSelected ? "Remove from List" : "Add to List"}
           </button>
         </div>
       </div>
