@@ -5,13 +5,11 @@ interface ProfileListProps {
   profiles: UserProfileSummary[];
   platform: Platform;
   searchQuery: string;
-  onProfileClick: (username: string) => void;
 }
 
 export function ProfileList({
   profiles,
   platform,
-  onProfileClick,
 }: ProfileListProps) {
   return (
     <div className="flex flex-col items-center">
@@ -21,7 +19,6 @@ export function ProfileList({
           key={profile.user_id}
           profile={profile}
           platform={platform}
-          onProfileClick={onProfileClick}
         />
       ))}
     </div>
