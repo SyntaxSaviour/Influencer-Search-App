@@ -64,10 +64,7 @@ export function ProfileDetailPage() {
       </Link>
 
       <div className="flex gap-6 items-start text-left max-w-2xl mx-auto">
-        <img
-          src={user.picture}
-          className="w-24 h-24 rounded-full border"
-        />
+        <img src={user.picture} alt={user.fullname} className="w-12 h-12 rounded-full" />
         <div className="flex-1">
           <h2 className="text-xl font-bold">
             @{user.username}
@@ -135,6 +132,7 @@ export function ProfileDetailPage() {
             <a
               href={user.url}
               target="_blank"
+              rel="noopener noreferrer"
               className="inline-block mt-4 text-blue-600 text-sm"
             >
               View on platform →

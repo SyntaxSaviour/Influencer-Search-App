@@ -1,5 +1,4 @@
-import { formatFollowers } from "@/utils/formatters";
-import { useNavigate } from "react-router-dom";
+import { formatFollowers } from "@/utils/formatters";import { useNavigate } from "react-router-dom";
 import type { Platform, UserProfileSummary } from "@/types";
 import { VerifiedBadge } from "./VerifiedBadge";
 
@@ -27,8 +26,8 @@ export function ProfileCard({
     <div
       onClick={handleClick}
       className="flex items-center gap-3 p-3 border border-gray-300 mb-2 cursor-pointer hover:bg-gray-50 w-[700px]"
-      data-search={searchQuery}
     >
+      <img src={profile.picture} alt={profile.fullname} className="w-12 h-12 rounded-full" />
       <img src={profile.picture} className="w-12 h-12 rounded-full" />
       <div className="text-left flex-1">
         <div className="font-bold">
@@ -36,7 +35,7 @@ export function ProfileCard({
           <VerifiedBadge verified={profile.is_verified} />
         </div>
         <div className="text-sm text-gray-600">{profile.fullname}</div>
-        <div className="text-sm">{formatFollowers(profile.followers)} followers</div>
+        <div className="text-sm">{formatFollowersLocal(profile.followers)}</div>
       </div>
       {/* TODO: candidates must implement Add to List feature */}
       {/* TODO: candidates must implement Add to List feature */}
