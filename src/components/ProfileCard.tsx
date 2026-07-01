@@ -5,14 +5,12 @@ import { VerifiedBadge } from "./VerifiedBadge";
 interface ProfileCardProps {
   profile: UserProfileSummary;
   platform: Platform;
-  searchQuery: string;
   onProfileClick?: (username: string) => void;
 }
 
 export function ProfileCard({
   profile,
   platform,
-  searchQuery,
   onProfileClick,
 }: ProfileCardProps) {
   const navigate = useNavigate();
@@ -35,7 +33,7 @@ export function ProfileCard({
           <VerifiedBadge verified={profile.is_verified} />
         </div>
         <div className="text-sm text-gray-600">{profile.fullname}</div>
-        <div className="text-sm">{formatFollowersLocal(profile.followers)}</div>
+        <div className="text-sm">{formatFollowers(profile.followers)} followers</div>
       </div>
       {/* TODO: candidates must implement Add to List feature */}
       {/* TODO: candidates must implement Add to List feature */}

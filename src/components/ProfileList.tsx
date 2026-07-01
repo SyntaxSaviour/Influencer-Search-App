@@ -11,7 +11,6 @@ interface ProfileListProps {
 export function ProfileList({
   profiles,
   platform,
-  searchQuery,
   onProfileClick,
 }: ProfileListProps) {
   return (
@@ -22,7 +21,6 @@ export function ProfileList({
           key={profile.user_id}
           profile={profile}
           platform={platform}
-          searchQuery={searchQuery}
           onProfileClick={onProfileClick}
         />
       ))}
